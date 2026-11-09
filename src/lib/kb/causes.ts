@@ -95,11 +95,3 @@ export function ticketCause(groups: CauseGroup[], ticket: number): CauseGroup['c
 export function readAs(g: CauseGroup, ids: readonly string[]): number {
   return g.reports.filter((r) => ids.includes(r.id)).length;
 }
-
-// What a report shows. A report the desk read as a one-day move (desk-notes.json) is not a flipped
-// date at all: the day moved by one, so neither `parser` nor `hint` explains it.
-export type Problem = Cause | 'one-day' | 'unplaced';
-
-export function problemOf(r: Report, t: Tenant | undefined, oneDayMove: readonly string[]): Problem {
-  return oneDayMove.includes(r.id) ? 'one-day' : (causeOf(r, t) ?? 'unplaced');
-}

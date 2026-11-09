@@ -1,8 +1,8 @@
 ---
 layout: runbook
-title: '#4471 · three problems, not one'
+title: '#4471 · two problems, not one'
 owner: Mateusz Turcza
-status: proposed
+status: closed
 reviewed: 2026-11-09
 signature: Mateusz Turcza
 ---
@@ -13,43 +13,40 @@ signature: Mateusz Turcza
   import RenderStamp from '#lib/kb/RenderStamp.svelte';
 </script>
 
-[#4471](/kb/incidents/4471) is marked known: one bug, one fix queued. Read the reports instead
-of their subject lines and they show three problems. The queued parser fix closes only the first.
+[#4471](/kb/incidents/4471) was marked known: one bug, one fix queued. The desk's own table on
+that page shows two causes, and only one of them was ever going to be fixed. Each now has its
+own ticket, and engineering closed #4471 on 5 October.
 
-<ProblemTable ticket={4471} issues={{
-  parser: 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/1',
-  hint: 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/2',
-  'one-day': 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/3',
-}} />
+<ProblemTable ticket={4471}
+  tickets={{
+    parser: { url: 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/1', outcome: 'fixed' },
+    hint: { url: 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/2', outcome: "won't fix" },
+  }}
+  oneDay={{ url: 'https://github.com/xemlock/mega-s01e03-what-it-shows/issues/3', outcome: 'closed with #1' }}
+/>
 
-## The three problems
+## The two problems
 
-**`parser`: the shared parser reads every date month first.** Every tenant on file writes the
-day first, so 7 April comes out as 4 July. Day and month swap places; the body names both dates.
+**`parser`: the shared parser read every date month first.** Every tenant on file writes the
+day first, so 7 April came out as 4 July. Fixed: `fix(dates): parse dd/mm for eu locales`.
 
-**`hint`: booking-v3's form tells people to type month first.** Its date field prints
-`MM/DD/YYYY`, and the form then reads the date the tenant's way, day first. People who follow the
-hint get the same swap, but the parser fix does not touch it: the hint and the form disagree.
-Only reports sent through the form of a booking-v3 tenant (Alder Physio, Copper Studio, Pale
-Harbour) have this cause.
+**`hint`: booking-v3's form told people to type month first.** Its date field printed
+`MM/DD/YYYY`, and the form then read the date the tenant's way, day first. People who followed
+the hint got the same swap, and the parser fix did not touch it. Only reports sent through the
+form of a booking-v3 tenant have this cause. Won't fix: the booking-v3 form is retired.
 
-**`one-day`: the date moves by one day, it does not swap.** "Tuesday 12 May. Calendar says
-Monday 11 May." "Client in Lisbon got Tuesday. Client in Toronto got Monday." "The invite arrived
-before I made the booking." A flipped day and month cannot do that; a time zone or a day boundary
-can. The desk already read these as a one-day move (`desk-notes.json`), then filed them under
-`parser` by tenant.
-
-<Callout kind="warn">
-The fix queued for #4471 closes <code>parser</code> only. <code>hint</code> and <code>one-day</code>
-stay open until they have their own fix.
+<Callout>
+Some <code>parser</code> reports describe a date that moved by one day, not a swap ("Client in
+Lisbon got Tuesday. Client in Toronto got Monday."). The desk counts them under
+<code>parser</code>, where they are filed. If reports like these still come in after the parser
+fix, they are a problem of their own: open a new ticket.
 </Callout>
 
-## Why one ticket held all three
+## Why one ticket held both
 
-[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone. All three
-problems arrive as "Wrong day on the invite" or "Month and day swapped?", so they all landed in one
-ticket. The intake tag does not separate them either: it is guessed from the reporter's browser,
-not their tenant, and it often disagrees with the cause. The table above counts by tenant, form and
-body, and counts each report id once.
+[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone. Both problems
+arrive as "Wrong day on the invite" or "Month and day swapped?", so they landed in one ticket.
+The intake tag does not separate them either: it is guessed from the reporter's browser, not
+their tenant's form. The table above counts by tenant and form, and counts each report id once.
 
 <RenderStamp {signature} />
